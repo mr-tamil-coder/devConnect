@@ -11,19 +11,26 @@ import {
   Bug,
   Database,
 } from "lucide-react";
-
+import axios from "axios";
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-    email: "",
+    emailId: "mohan1@gmail.com",
     password: "",
     name: "",
     github: "",
   });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
   const [loadingState, setLoadingState] = useState("");
 
   const [animationText, setAnimationText] = useState("");
-  
+
   const codeSnippets = [
     "function findLove() { return developer.match(); }",
     "try { heart.open() } catch (feelings) { }",
@@ -93,6 +100,17 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      const data = await axios.post(
+        "http://localhost:3000/auth/login",
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+    } catch (err) {
+      setLoadingState("failed");
+    }
     setLoadingState("loading");
     // Simulate loading with progress messages
     await new Promise((r) => setTimeout(r, 1000));
@@ -111,6 +129,8 @@ const AuthPage = () => {
         return "Running security tests...";
       case "success":
         return "Build successful!";
+      case "failed":
+        return "Build failed!";
       default:
         return "";
     }
@@ -230,6 +250,7 @@ const AuthPage = () => {
                       name="name"
                       type="text"
                       placeholder="John Doe"
+                      onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all group-hover:border-green-500/50"
                     />
                   </div>
@@ -243,6 +264,7 @@ const AuthPage = () => {
                       name="github"
                       type="text"
                       placeholder="johndoe"
+                      onChange={handleChange}
                       className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all group-hover:border-green-500/50"
                     />
                   </div>
@@ -255,9 +277,10 @@ const AuthPage = () => {
                   Email
                 </label>
                 <input
-                  name="email"
+                  name="emailId"
                   type="email"
                   placeholder="you@example.com"
+                  onChange={handleChange}
                   className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all group-hover:border-green-500/50"
                 />
               </div>
@@ -271,6 +294,7 @@ const AuthPage = () => {
                   name="password"
                   type="password"
                   placeholder="••••••••"
+                  onChange={handleChange}
                   className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all group-hover:border-green-500/50"
                 />
               </div>
@@ -329,7 +353,6 @@ const AuthPage = () => {
           </div>
         </div>
       </div>
-      
 
       {/* Styling for animation */}
       <style jsx global>{`
