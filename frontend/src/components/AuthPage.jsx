@@ -12,6 +12,10 @@ import {
   Database,
 } from "lucide-react";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
+import { useNavigate } from "react-router-dom";
+import { API } from "../data/main";
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -30,7 +34,9 @@ const AuthPage = () => {
   const [loadingState, setLoadingState] = useState("");
 
   const [animationText, setAnimationText] = useState("");
-
+  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const codeSnippets = [
     "function findLove() { return developer.match(); }",
     "try { heart.open() } catch (feelings) { }",
@@ -101,13 +107,15 @@ const AuthPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await axios.post(
-        "http://localhost:3000/auth/login",
+      const response = await axios.post(
+        API+"/auth/login",
         formData,
         {
           withCredentials: true,
         }
       );
+      dispatch(addUser(response.data));
+      return navigate('/')
     } catch (err) {
       setLoadingState("failed");
     }

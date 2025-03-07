@@ -6,6 +6,8 @@ import Body from "./components/Body";
 import AuthPage from "./components/AuthPage";
 import { Provider } from "react-redux";
 import appStore from "./utils/appStore";
+import Feed from "./components/Feed";
+import Profile from "./components/Profile";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -15,7 +17,9 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Body />}>
-              <Route path="/" element={<AuthPage />} />
+              <Route path="/" element={<Feed />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/login" element={<AuthPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

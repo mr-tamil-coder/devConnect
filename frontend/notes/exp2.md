@@ -26,3 +26,13 @@
   - If you done frontend the `axios => {withCredentials:true}` but **in backend you not add this line within the cors** `credentials: true` it will throw the cors error
 - Above points are important to know..
   
+
+### Redux Toolkit 
+- 2 library installed 
+  - redux/js-toolkit
+  - react-redux
+- Setup 
+  - Configure store => Provider => createSlice => add reducer to store  
+
+
+- Once update the data of login of the respective user to the redux..now we see the power of redux..we can access our data in any components
