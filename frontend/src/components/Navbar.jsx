@@ -1,12 +1,13 @@
 import React from "react";
 import { API, appData } from "../data/main";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { removeUser } from "../utils/userSlice";
 const Navbar = () => {
   const user = useSelector((state) => state.user);
-  const dispatch = useDispatch(removeUser());
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   console.log("Userss", user);
   const handleLogout = async () => {
     try {
@@ -17,12 +18,11 @@ const Navbar = () => {
           withCredentials: true,
         }
       );
+      dispatch(removeUser());
+      return navigate("/login")
     } catch (err) {
       console.error("Error in logging out", err);
     }
-
-    localStorage.removeItem("user");
-    dispatch(addUser(null));
   };
   return (
     <div className="navbar bg-base-100 shadow-sm">

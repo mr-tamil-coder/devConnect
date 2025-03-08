@@ -34,7 +34,7 @@ const AuthPage = () => {
   const [loadingState, setLoadingState] = useState("");
 
   const [animationText, setAnimationText] = useState("");
-  
+  const [error,setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const codeSnippets = [
@@ -117,6 +117,9 @@ const AuthPage = () => {
       dispatch(addUser(response.data));
       return navigate('/')
     } catch (err) {
+      console.log(err.response.data);
+      
+      setError(err.response.data);
       setLoadingState("failed");
     }
     setLoadingState("loading");
@@ -306,7 +309,7 @@ const AuthPage = () => {
                   className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all group-hover:border-green-500/50"
                 />
               </div>
-
+              <p className="text-sm text-red-500">{error} </p>
               <button
                 type="submit"
                 disabled={loadingState !== ""}
