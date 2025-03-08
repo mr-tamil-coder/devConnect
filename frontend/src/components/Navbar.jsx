@@ -1,14 +1,35 @@
 import React from "react";
-import { appData } from "../data/main";
-import { useSelector } from "react-redux";
+import { API, appData } from "../data/main";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { removeUser } from "../utils/userSlice";
 const Navbar = () => {
   const user = useSelector((state) => state.user);
+  const dispatch = useDispatch(removeUser());
   console.log("Userss", user);
+  const handleLogout = async () => {
+    try {
+      const res = await axios.post(
+        API + "/auth/logout",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+    } catch (err) {
+      console.error("Error in logging out", err);
+    }
+
+    localStorage.removeItem("user");
+    dispatch(addUser(null));
+  };
   return (
     <div className="navbar bg-base-100 shadow-sm">
       <div className="flex-1">
-        <Link to="/" className="btn btn-ghost text-xl">{appData.name}</Link>
+        <Link to="/" className="btn btn-ghost text-xl">
+          {appData.name}
+        </Link>
       </div>
       <div className="flex gap-2 ">
         {user && (
@@ -41,7 +62,7 @@ const Navbar = () => {
                   <Link to="/settings">Settings</Link>
                 </li>
                 <li>
-                  <a>Logout</a>
+                  <a onClick={handleLogout}>Logout</a>
                 </li>
               </ul>
             </div>
