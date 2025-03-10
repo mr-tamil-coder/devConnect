@@ -30,10 +30,14 @@ profileRouter.patch("/edit", userAuth, async (req, res) => {
 
     res.json({
       message: `${loggedInUser.firstName} Profile edited successfully`,
-      data:loggedInUser,
+      data: loggedInUser,
     });
   } catch (err) {
-    res.send("Error in editing profile" + err.message);
+    // Set appropriate error status code (400 for client errors, 500 for server errors)
+    res.status(400).json({
+      error: true,
+      message: "Error in editing profile: " + err.message,
+    });
   }
 });
 module.exports = { profileRouter };

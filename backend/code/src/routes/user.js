@@ -3,7 +3,7 @@ const { userAuth } = require("../middlewares/auth");
 const userRouter = express.Router();
 const { connectionRequest } = require("../models/connectionRequest");
 const { User } = require("../models/user");
-
+const { mongoose } = require("mongoose");
 userRouter.get("/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -63,49 +63,62 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(loggedInUserId)) {
       return res.status(400).json({ message: "Invalid user ID format" });
     }
+    
     const page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 10;
     limit = limit > 50 ? 50 : limit;
     const skip = (page - 1) * limit;
 
-    //find all connection requests (sent + received)
+    // Find all connection requests (sent + received)
     const connectionRequests = await connectionRequest
       .find({
-        $or: [{ fromUserId: loggedInUserId }, { toUserId: loggedInUserId }],
+        $or: [
+          { fromUserId: loggedInUserId }, 
+          { toUserId: loggedInUserId }
+        ],
       })
-      .select("fromUserId toUserId")
-      .populate("fromUserId", "firstName lastName")
-      .populate("toUserId", "firstName lastName")
       .lean();
 
+    // Create a Set of user IDs to exclude (users you already have a connection with)
     const excludeUsers = new Set();
-    connectionRequests.forEach((connectionRequest) => {
-      excludeUsers.add(connectionRequest.fromUserId._id.toString());
-      excludeUsers.add(connectionRequest.toUserId._id.toString());
+    
+    // Add the logged in user's ID to the exclude list
+    excludeUsers.add(loggedInUserId.toString());
+    
+    // Add all users from connection requests to exclude list
+    connectionRequests.forEach((request) => {
+      excludeUsers.add(request.fromUserId.toString());
+      excludeUsers.add(request.toUserId.toString());
     });
-
+    
+    // Convert the Set to an array of ObjectIds for the query
+    const excludeUserIds = Array.from(excludeUsers).map(id => 
+      mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id
+    );
+    
+    console.log("Excluded User IDs:", excludeUserIds);
+    console.log("Logged In User ID:", loggedInUserId.toString());
+    
+    // Find users who are not in the exclude list
     const users = await User.find({
-      $and: [
-        {
-          _id: {
-            $nin: Array.from(excludeUsers),
-          },
-        },
-        {
-          _id: {
-            $ne: loggedInUser._id,
-          },
-        },
-      ],
+      _id: { $nin: excludeUserIds }
     })
-      .select("firstName lastName")
+      .select("firstName lastName emailId age gender photoUrl about skills role")
       .limit(limit)
       .skip(skip)
       .lean();
-    console.log("Hide User Feed ", users);
-    res.send(users);
+    
+    console.log("User Feed Results:", users);
+    
+    // Check if feed is empty
+    if (users.length === 0) {
+      return res.json({ message: "No new users found for your feed" });
+    }
+    
+    res.json(users);
   } catch (err) {
-    res.status(500).send("Server Error");
+    console.error("Feed API Error:", err);
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
 
