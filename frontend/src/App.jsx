@@ -7,7 +7,7 @@ import AuthPage from "./components/AuthPage";
 import { Provider } from "react-redux";
 import appStore from "./utils/appStore";
 import Feed from "./components/Feed";
-import Profile from "./components/Profile";
+import ProfileEdit from "./components/ProfileEdit";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -18,7 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Body />}>
               <Route path="/" element={<Feed />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={<ProfileEdit />} />
               <Route path="/login" element={<AuthPage />} />
             </Route>
           </Routes>

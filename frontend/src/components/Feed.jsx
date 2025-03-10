@@ -1,6 +1,20 @@
-import React, { useState, useRef } from 'react';
-import { Heart, X, Code, Github, Coffee, Briefcase, MapPin, Award, Star } from 'lucide-react';
-
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Heart,
+  X,
+  Code,
+  Github,
+  Coffee,
+  Briefcase,
+  MapPin,
+  Award,
+  Star,
+  Satellite,
+} from "lucide-react";
+import axios from "axios";
+import { API } from "../data/main";
+import { useSelector, useDispatch } from "react-redux";
+import { addFeed } from "../utils/feedSlice";
 // Sample developer profiles data with images
 const sampleProfiles = [
   {
@@ -14,7 +28,7 @@ const sampleProfiles = [
     interests: ["Open Source", "AI/ML", "Cloud"],
     achievement: "Created a popular dev tool with 2k+ stars",
     coffeePreference: "Cold Brew ☕",
-    image: "/api/placeholder/400/500" // Using placeholder for demo
+    image: "/api/placeholder/400/500", // Using placeholder for demo
   },
   {
     id: 2,
@@ -27,8 +41,8 @@ const sampleProfiles = [
     interests: ["UI/UX", "Animation", "JAMstack"],
     achievement: "Speaker at Vue.js Conference",
     coffeePreference: "Espresso ☕",
-    image: "/api/placeholder/400/500"
-  }
+    image: "/api/placeholder/400/500",
+  },
 ];
 
 const DevTinderFeed = () => {
@@ -40,7 +54,31 @@ const DevTinderFeed = () => {
   const cardRef = useRef(null);
   const startPosRef = useRef({ x: 0, y: 0 });
 
+  const feed = useSelector((store) => store.feed);
+  const dispatch = useDispatch();
+  const [currentUser,setCurrentUser]= useState("");
   const currentProfile = sampleProfiles[currentIndex];
+  const getFeed = async () => {
+    if (feed) return;
+    try {
+      const response = await axios.get(API + "/user/feed", {
+        withCredentials: true,
+      });
+      dispatch(addFeed(response.data));
+      setCurrentUser(response.data[2]);
+      console.log(response.data[2]);
+      
+      // currentUser = response.data[2];
+      // console.log("currentUser: ", currentUser);
+    } catch (err) {
+      //TODO : handle feed logic error
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    getFeed();
+  }, []);
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -49,10 +87,10 @@ const DevTinderFeed = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    
+
     const deltaX = e.clientX - startPosRef.current.x;
     const deltaY = e.clientY - startPosRef.current.y;
-    
+
     setDragOffset({ x: deltaX, y: deltaY });
 
     // Calculate rotation based on drag distance
@@ -63,9 +101,9 @@ const DevTinderFeed = () => {
 
     // Show swipe indicators based on drag direction
     if (deltaX > 100) {
-      setSwipeDirection('right');
+      setSwipeDirection("right");
     } else if (deltaX < -100) {
-      setSwipeDirection('left');
+      setSwipeDirection("left");
     } else {
       setSwipeDirection(null);
     }
@@ -75,15 +113,15 @@ const DevTinderFeed = () => {
     if (!isDragging) return;
 
     const threshold = 100; // Minimum distance to trigger swipe
-    
+
     if (dragOffset.x > threshold) {
-      handleSwipe('right');
+      handleSwipe("right");
     } else if (dragOffset.x < -threshold) {
-      handleSwipe('left');
+      handleSwipe("left");
     } else {
       // Reset card position if swipe threshold not met
       if (cardRef.current) {
-        cardRef.current.style.transform = 'none';
+        cardRef.current.style.transform = "none";
       }
     }
 
@@ -92,20 +130,23 @@ const DevTinderFeed = () => {
   };
 
   const handleSwipe = (direction) => {
-    setSwipeHistory(prev => [...prev, {
-      id: currentProfile.id,
-      name: currentProfile.name,
-      direction,
-      timestamp: new Date().toISOString()
-    }]);
+    setSwipeHistory((prev) => [
+      ...prev,
+      {
+        id: currentProfile.id,
+        name: currentProfile.name,
+        direction,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
 
     // Animate card away
-    const rotation = direction === 'right' ? 30 : -30;
-    const translateX = direction === 'right' ? '120%' : '-120%';
-    
+    const rotation = direction === "right" ? 30 : -30;
+    const translateX = direction === "right" ? "120%" : "-120%";
+
     if (cardRef.current) {
       cardRef.current.style.transform = `translate(${translateX}, 0) rotate(${rotation}deg)`;
-      cardRef.current.style.transition = 'transform 0.5s ease-out';
+      cardRef.current.style.transition = "transform 0.5s ease-out";
     }
 
     // Move to next profile
@@ -113,8 +154,8 @@ const DevTinderFeed = () => {
       setCurrentIndex((prev) => (prev + 1) % sampleProfiles.length);
       setSwipeDirection(null);
       if (cardRef.current) {
-        cardRef.current.style.transform = 'none';
-        cardRef.current.style.transition = 'none';
+        cardRef.current.style.transform = "none";
+        cardRef.current.style.transition = "none";
       }
     }, 500);
   };
@@ -125,18 +166,26 @@ const DevTinderFeed = () => {
     <div className="min-h-screen bg-gray-900 p-4 flex flex-col items-center">
       {/* Swipe indicators */}
       <div className="fixed top-1/2 left-8 transform -translate-y-1/2">
-        <div className={`transition-opacity duration-200 ${swipeDirection === 'left' ? 'opacity-100' : 'opacity-0'}`}>
+        <div
+          className={`transition-opacity duration-200 ${
+            swipeDirection === "left" ? "opacity-100" : "opacity-0"
+          }`}
+        >
           <X className="h-16 w-16 text-red-500" />
         </div>
       </div>
       <div className="fixed top-1/2 right-8 transform -translate-y-1/2">
-        <div className={`transition-opacity duration-200 ${swipeDirection === 'right' ? 'opacity-100' : 'opacity-0'}`}>
+        <div
+          className={`transition-opacity duration-200 ${
+            swipeDirection === "right" ? "opacity-100" : "opacity-0"
+          }`}
+        >
           <Heart className="h-16 w-16 text-green-500" />
         </div>
       </div>
 
       {/* Profile Card */}
-      <div 
+      <div
         ref={cardRef}
         className="w-full max-w-md bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden cursor-grab active:cursor-grabbing"
         onMouseDown={handleMouseDown}
@@ -146,19 +195,19 @@ const DevTinderFeed = () => {
       >
         {/* Profile Image */}
         <div className="relative h-96">
-          <img 
-            src={currentProfile.image} 
-            alt={currentProfile.name}
+          <img
+            src={currentUser.photoUrl}
+            alt={currentUser.firstName}
             className="w-full h-full object-cover"
           />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent h-32" />
           <div className="absolute bottom-4 left-4 right-4">
             <h2 className="text-3xl font-bold text-white mb-2">
-              {currentProfile.name}
+              {currentUser.firstName + " " + currentUser.lastName}
             </h2>
             <div className="flex items-center text-gray-200 space-x-2">
               <Code className="h-5 w-5 text-green-400" />
-              <span>{currentProfile.role}</span>
+              <span>{currentUser.role}</span>
             </div>
           </div>
         </div>
@@ -193,9 +242,11 @@ const DevTinderFeed = () => {
           </div>
 
           <div>
-            <div className="text-sm text-gray-400 mb-2 font-mono">Tech Stack</div>
+            <div className="text-sm text-gray-400 mb-2 font-mono">
+              Tech Stack
+            </div>
             <div className="flex flex-wrap gap-2">
-              {currentProfile.techStack.map((tech) => (
+              {currentUser && currentUser.skills.map((tech) => (
                 <span
                   key={tech}
                   className="px-3 py-1 bg-gray-700 text-green-400 rounded-full text-sm font-mono"
@@ -207,7 +258,9 @@ const DevTinderFeed = () => {
           </div>
 
           <div>
-            <div className="text-sm text-gray-400 mb-2 font-mono">Interests</div>
+            <div className="text-sm text-gray-400 mb-2 font-mono">
+              Interests
+            </div>
             <div className="flex flex-wrap gap-2">
               {currentProfile.interests.map((interest) => (
                 <span
@@ -224,13 +277,13 @@ const DevTinderFeed = () => {
         {/* Action buttons */}
         <div className="p-4 bg-gray-900 flex justify-center space-x-6">
           <button
-            onClick={() => handleSwipe('left')}
+            onClick={() => handleSwipe("left")}
             className="p-4 bg-gray-800 hover:bg-red-500 rounded-full transition-colors duration-300 group"
           >
             <X className="h-8 w-8 text-red-500 group-hover:text-white" />
           </button>
           <button
-            onClick={() => handleSwipe('right')}
+            onClick={() => handleSwipe("right")}
             className="p-4 bg-gray-800 hover:bg-green-500 rounded-full transition-colors duration-300 group"
           >
             <Heart className="h-8 w-8 text-green-500 group-hover:text-white" />
@@ -242,19 +295,26 @@ const DevTinderFeed = () => {
       <div className="mt-6 w-full max-w-md">
         <div className="text-gray-400 font-mono mb-2">Recent Activity</div>
         <div className="space-y-2">
-          {swipeHistory.slice(-3).reverse().map((swipe) => (
-            <div 
-              key={swipe.timestamp}
-              className="bg-gray-800 p-3 rounded-lg border border-gray-700 flex items-center justify-between"
-            >
-              <span className="text-gray-300 font-mono">
-                {swipe.name}
-              </span>
-              <span className={`font-mono ${swipe.direction === 'right' ? 'text-green-400' : 'text-red-400'}`}>
-                {swipe.direction === 'right' ? '→ Matched' : '← Passed'}
-              </span>
-            </div>
-          ))}
+          {swipeHistory
+            .slice(-3)
+            .reverse()
+            .map((swipe) => (
+              <div
+                key={swipe.timestamp}
+                className="bg-gray-800 p-3 rounded-lg border border-gray-700 flex items-center justify-between"
+              >
+                <span className="text-gray-300 font-mono">{swipe.name}</span>
+                <span
+                  className={`font-mono ${
+                    swipe.direction === "right"
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {swipe.direction === "right" ? "→ Matched" : "← Passed"}
+                </span>
+              </div>
+            ))}
         </div>
       </div>
     </div>

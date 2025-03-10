@@ -20,7 +20,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     emailId: "mohan1@gmail.com",
-    password: "",
+    password: "Vinoth123@",
     name: "",
     github: "",
   });
@@ -292,6 +292,7 @@ const AuthPage = () => {
                   type="email"
                   placeholder="you@example.com"
                   onChange={handleChange}
+                  value={formData.emailId}
                   className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all group-hover:border-green-500/50"
                 />
               </div>
@@ -306,6 +307,7 @@ const AuthPage = () => {
                   type="password"
                   placeholder="••••••••"
                   onChange={handleChange}
+                  value={formData.password}
                   className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all group-hover:border-green-500/50"
                 />
               </div>
